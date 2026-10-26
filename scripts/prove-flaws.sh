@@ -13,6 +13,7 @@ removed=$(git diff --name-only --diff-filter=D as-delivered HEAD -- "${PATHS[@]}
 restore() {
   git checkout -q HEAD -- "${PATHS[@]}"
   for f in $removed; do rm -f "$f"; done
+  composer dump-autoload -q
   rm -f junit-as-delivered.xml
 }
 trap restore EXIT
@@ -20,15 +21,18 @@ trap restore EXIT
 git checkout -q as-delivered -- "${PATHS[@]}"
 # Files the fixes added (e.g. a policy) did not exist in the delivered app.
 for f in $added; do rm -f "$f"; done
+# Composer's optimized classmap still lists the removed files: rebuild it for the code as delivered.
+composer dump-autoload -q
 
 php artisan test --filter=SecurityReviewTest --log-junit junit-as-delivered.xml >/dev/null 2>&1 || true
 
-# One line per security test: its name and whether it failed (a <failure> or <error> child).
+# One line per security test: "failed" for a failed assertion (the attack worked), "error" for a crash
+# (the test could not run on that code, which proves nothing), "passed" otherwise.
 results=$(php -r '
   $xml = simplexml_load_file($argv[1]);
   foreach ($xml->xpath("//testcase") as $case) {
-      $failed = count($case->failure) + count($case->error) > 0 ? "failed" : "passed";
-      echo $case["name"], " ", $failed, PHP_EOL;
+      $state = count($case->error) > 0 ? "error" : (count($case->failure) > 0 ? "failed" : "passed");
+      echo $case["name"], " ", $state, PHP_EOL;
   }' junit-as-delivered.xml)
 
 status=0
@@ -37,6 +41,7 @@ for t in test_1_ test_2_ test_3_ test_4_; do
   case "$line" in
     *" failed") echo "as delivered, attack works: ${line% failed}" ;;
     *" passed") echo "as delivered, test passed (attack did not reproduce): ${line% passed}"; status=1 ;;
+    *" error") echo "as delivered, test crashed (proves nothing): ${line% error}"; status=1 ;;
     *) echo "missing: ${t}"; status=1 ;;
   esac
 done
