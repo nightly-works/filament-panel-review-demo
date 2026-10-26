@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "nightly-works/filament-panel-review-demo",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Security review of a Filament admin panel: four flaws as attack tests, fixed one commit at a time",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {

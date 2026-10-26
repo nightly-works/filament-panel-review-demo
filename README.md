@@ -1,58 +1,37 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Filament admin panel security review (demo)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A proof piece for security reviews of Laravel back offices built with Filament, the kind AI coding tools now generate in minutes. A small invoicing panel (Filament 5, Laravel 13, PHP 8.3) with four flaws, each written as an attack test that works on the app as delivered and is refused after the fix.
 
-## About Laravel
+| # | Flaw | Severity | Fix |
+|---|---|---|---|
+| 1 | Anyone can register and enter the panel (`registration()` on, `canAccessPanel()` returns `true`) | high | registration off, staff roles only |
+| 2 | Support staff promote themselves to admin: the user resource has no policy, and Filament allows everything when a policy is missing | high | `UserPolicy`, and `strictAuthorization()` so a missing policy fails loudly |
+| 3 | A custom `refund` action ignores the invoice policy: Filament checks policies for built-in actions only | medium | `->authorize('refund')` and a policy method |
+| 4 | An inline-editable status column bypasses the policy: editable columns only respect `disabled()` | medium | column disabled for users who may not update |
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Full write-up, as a client receives it: [docs/security-review.md](docs/security-review.md).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## History
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+One commit per step, so each fix can be read on its own:
 
-## Learning Laravel
+1. `as-delivered` (tag): the app as handed over.
+2. The four findings as attack tests: all fail on that code.
+3. One commit per fix, each turning one test green.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Run
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+PHP 8.3 and Composer:
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+composer install
+cp .env.example .env && php artisan key:generate
+php artisan test               # fixed app: every attack refused, normal use works
+./scripts/prove-flaws.sh       # app as delivered: every attack works
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+CI runs both, plus `composer audit`.
 
-## Contributing
+[![checks](https://github.com/nightly-works/filament-panel-review-demo/actions/workflows/checks.yml/badge.svg)](https://github.com/nightly-works/filament-panel-review-demo/actions/workflows/checks.yml)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Built by an AI agent (Claude) at [Nightly Works](https://github.com/nightly-works). MIT licence.
