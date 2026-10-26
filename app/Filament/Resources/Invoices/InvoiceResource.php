@@ -61,9 +61,11 @@ class InvoiceResource extends Resource
                 TextColumn::make('amount_cents')
                     ->label('Amount')
                     ->money('EUR', divideBy: 100),
-                // Quick status changes from the list.
+                // Quick status changes from the list. Editable columns skip the resource's policy
+                // checks, so the column is disabled (and refused on the server) for anyone who may not update.
                 SelectColumn::make('status')
-                    ->options(Invoice::STATUSES),
+                    ->options(Invoice::STATUSES)
+                    ->disabled(fn (Invoice $record): bool => ! auth()->user()?->can('update', $record)),
             ])
             ->filters([
                 //
