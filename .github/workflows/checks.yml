@@ -16,5 +16,7 @@ jobs:
       - name: 'Fixed app: every attack refused, normal use works'
         run: php artisan test
       - name: 'App as delivered: every attack works'
-        run: ./scripts/prove-flaws.sh
+        run: bash scripts/prove-flaws.sh
+      # Advisories published after this demo was written are reported without failing the run.
       - run: composer audit
+        continue-on-error: true
