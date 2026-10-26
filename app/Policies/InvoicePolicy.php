@@ -37,4 +37,9 @@ class InvoicePolicy
     {
         return $user->isAdmin();
     }
+
+    public function refund(User $user, Invoice $invoice): bool
+    {
+        return $user->isAdmin() && $invoice->status === 'paid';
+    }
 }

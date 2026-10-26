@@ -70,8 +70,10 @@ class InvoiceResource extends Resource
             ])
             ->recordActions([
                 EditAction::make(),
+                // Custom actions are not covered by the resource's policy checks: authorize explicitly.
                 Action::make('refund')
                     ->requiresConfirmation()
+                    ->authorize('refund')
                     ->visible(fn (Invoice $record): bool => $record->status === 'paid')
                     ->action(fn (Invoice $record) => $record->update(['status' => 'refunded'])),
             ])
