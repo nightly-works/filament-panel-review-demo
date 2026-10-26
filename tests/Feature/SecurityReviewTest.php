@@ -93,7 +93,20 @@ class SecurityReviewTest extends TestCase
         $this->assertSame('paid', $invoice->fresh()->status);
     }
 
-    public function test_support_still_reads_invoices(): void
+    public function test_admins_cannot_bulk_delete_their_own_account(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $leaver = User::factory()->support()->create();
+        $this->actingAs($admin);
+
+        // Bulk actions check deleteAny() unless told to check each record against delete().
+        Livewire::test(ListUsers::class)->callTableBulkAction('delete', [$admin, $leaver]);
+
+        $this->assertModelExists($admin);
+        $this->assertModelMissing($leaver);
+    }
+
+    public function test_5_support_still_reads_invoices(): void
     {
         $invoices = Invoice::factory()->count(3)->create();
 
