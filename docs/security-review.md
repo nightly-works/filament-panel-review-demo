@@ -4,15 +4,15 @@
 
 **Scope**: the Filament panel (`app/Providers/Filament`, `app/Filament`), the user model's panel access, and the policies. Reviewed on a copy of the code; no live system was touched.
 **Method**: source read; each suspected flaw written as an automated attack (`tests/Feature/SecurityReviewTest.php`) and run against the code as delivered (`scripts/prove-flaws.sh`: every attack works), then fixed one commit at a time until the same tests pass.
-**Result**: 4 findings, 2 high. All fixed, each with a test that fails if the flaw comes back.
+**Result**: 4 findings: 1 critical, 1 high, 2 medium. All fixed, each with a test that fails if the flaw comes back.
 
 ## Summary for the owner
 
-Anyone on the internet can create an account and enter the back office, and a support agent can make themselves an admin. A support agent can also refund invoices and mark them paid, although the rules you wrote say only admins may. The fixes are small: about 50 lines, most of them a new policy class. The general rule behind three of the four: in Filament, a hidden button is not a permission; the server must check it.
+Anyone on the internet can create an account, enter the back office and make themselves an admin, and so can any support agent. A support agent can also refund invoices and mark them paid, although the rules you wrote say only admins may. The fixes are small: about 50 lines, most of them a new policy class. The general rule behind three of the four: in Filament, a hidden button is not a permission; the server must check it.
 
 ## Findings
 
-### 1. Anyone can register and enter the back office (high)
+### 1. Anyone can register and enter the back office (critical)
 
 **What**: the panel has `->registration()` on, and `User::canAccessPanel()` returns `true` for every user.
 **Impact**: a stranger signs up at `/admin/register`, opens Users (finding 2: no policy), sees every user's email and can give themselves the admin role. Invoices stay closed to them only because `InvoicePolicy` happens to check the role.
