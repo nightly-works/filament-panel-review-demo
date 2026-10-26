@@ -32,9 +32,10 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    // Staff only: self-registration is off, and an account without a role never reaches the panel.
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return in_array($this->role, ['admin', 'support'], true);
     }
 
     public function isAdmin(): bool
