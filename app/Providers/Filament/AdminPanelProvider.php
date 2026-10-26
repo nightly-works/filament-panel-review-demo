@@ -28,6 +28,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            // A resource whose model has no policy fails loudly instead of allowing everything.
+            ->strictAuthorization()
             ->colors([
                 'primary' => Color::Amber,
             ])
