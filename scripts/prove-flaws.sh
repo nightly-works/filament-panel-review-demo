@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 # Runs the security tests against the application code as delivered (tag as-delivered) and checks
 # that each of the four findings' tests fails there, i.e. that every attack worked before the fixes.
-# The working tree is put back as it was on exit. Needs a full clone (the tag) and `composer install`.
+# Needs a clean tree under the paths below, a full clone (the tag) and `composer install`; the tree is
+# put back to HEAD on exit.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 PATHS=(app bootstrap config database routes)
+git diff --quiet HEAD -- "${PATHS[@]}" || { echo "uncommitted changes under ${PATHS[*]}: commit or stash first"; exit 1; }
 added=$(git diff --name-only --diff-filter=A as-delivered HEAD -- "${PATHS[@]}")
+removed=$(git diff --name-only --diff-filter=D as-delivered HEAD -- "${PATHS[@]}")
 restore() {
   git checkout -q HEAD -- "${PATHS[@]}"
+  for f in $removed; do rm -f "$f"; done
   rm -f junit-as-delivered.xml
 }
 trap restore EXIT

@@ -7,7 +7,7 @@ A proof piece for security reviews of Laravel back offices built with Filament, 
 | 1 | Anyone can register and enter the panel (`registration()` on, `canAccessPanel()` returns `true`) | high | registration off, staff roles only |
 | 2 | Support staff promote themselves to admin: the user resource has no policy, and Filament allows everything when a policy is missing | high | `UserPolicy`, and `strictAuthorization()` so a missing policy fails loudly |
 | 3 | A custom `refund` action ignores the invoice policy: Filament checks policies for built-in actions only | medium | `->authorize('refund')` and a policy method |
-| 4 | An inline-editable status column bypasses the policy: editable columns only respect `disabled()` | medium | column disabled for users who may not update |
+| 4 | An inline-editable status column bypasses the policy: editable columns only respect `disabled()` and `hidden()` | medium | column disabled for users who may not update |
 
 Full write-up, as a client receives it: [docs/security-review.md](docs/security-review.md).
 
