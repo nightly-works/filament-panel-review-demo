@@ -11,6 +11,8 @@ A proof piece for security reviews of Laravel back offices built with Filament, 
 
 Full write-up, as a client receives it: [docs/security-review.md](docs/security-review.md).
 
+The static checks behind findings 1 to 4 are packaged as [filament-authorization-audit](https://github.com/nightly-works/filament-authorization-audit): run on the `as-delivered` tag it reports all four, plus the bulk-delete notice.
+
 ## History
 
 One commit per step, so each fix can be read on its own:
